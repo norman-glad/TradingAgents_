@@ -204,6 +204,28 @@ print(decision)
 
 You can view the full list of configurations in `tradingagents/default_config.py`.
 
+## Testing
+
+TradingAgents includes a test suite to ensure the reliability of its components. We use `unittest` for testing.
+
+To run the tests using `uv`, first ensure you have the dependencies installed:
+
+```bash
+uv pip install -r requirements.txt
+```
+
+You can run all tests using the following command:
+
+```bash
+uv run python -m unittest discover tests
+```
+
+Or run a specific test file, for example the momentum agent test:
+
+```bash
+uv run python tests/test_momentum_agent.py
+```
+
 ## Contributing
 
 We welcome contributions from the community! Whether it's fixing a bug, improving documentation, or suggesting a new feature, your input helps make this project better. If you are interested in this line of research, please consider joining our open-source financial AI research community [Tauric Research](https://tauric.ai/).
