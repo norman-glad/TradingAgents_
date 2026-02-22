@@ -23,22 +23,22 @@ class InvestDebateState(TypedDict):
 
 # Risk management team state
 class RiskDebateState(TypedDict):
-    aggressive_history: Annotated[
-        str, "Aggressive Agent's Conversation history"
+    risky_history: Annotated[
+        str, "Risky Agent's Conversation history"
     ]  # Conversation history
-    conservative_history: Annotated[
-        str, "Conservative Agent's Conversation history"
+    safe_history: Annotated[
+        str, "Safe Agent's Conversation history"
     ]  # Conversation history
     neutral_history: Annotated[
         str, "Neutral Agent's Conversation history"
     ]  # Conversation history
     history: Annotated[str, "Conversation history"]  # Conversation history
     latest_speaker: Annotated[str, "Analyst that spoke last"]
-    current_aggressive_response: Annotated[
-        str, "Latest response by the aggressive analyst"
+    current_risky_response: Annotated[
+        str, "Latest response by the risky analyst"
     ]  # Last response
-    current_conservative_response: Annotated[
-        str, "Latest response by the conservative analyst"
+    current_safe_response: Annotated[
+        str, "Latest response by the safe analyst"
     ]  # Last response
     current_neutral_response: Annotated[
         str, "Latest response by the neutral analyst"
@@ -60,7 +60,7 @@ class AgentState(MessagesState):
         str, "Report from the News Researcher of current world affairs"
     ]
     fundamentals_report: Annotated[str, "Report from the Fundamentals Researcher"]
-
+    momentum_report: Annotated[str, "Report from the Momentum Analyst"] # New agent
     # researcher team discussion step
     investment_debate_state: Annotated[
         InvestDebateState, "Current state of the debate on if to invest or not"

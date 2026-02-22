@@ -6,6 +6,7 @@ from langgraph.graph import END, StateGraph, START
 from langgraph.prebuilt import ToolNode
 
 from tradingagents.agents import *
+from tradingagents.agents.analysts.momentum_analyst import create_momentum_analyst
 from tradingagents.agents.utils.agent_states import AgentState
 
 from .conditional_logic import ConditionalLogic
@@ -38,7 +39,7 @@ class GraphSetup:
         self.conditional_logic = conditional_logic
 
     def setup_graph(
-        self, selected_analysts=["market", "social", "news", "fundamentals"]
+        self, selected_analysts=["market", "social", "news", "fundamentals", "momentum"] # New agent
     ):
         """Set up and compile the agent workflow graph.
 
@@ -48,6 +49,7 @@ class GraphSetup:
                 - "social": Social media analyst
                 - "news": News analyst
                 - "fundamentals": Fundamentals analyst
+                - "momentum": Momentum analyst
         """
         if len(selected_analysts) == 0:
             raise ValueError("Trading Agents Graph Setup Error: no analysts selected!")
@@ -84,7 +86,13 @@ class GraphSetup:
             )
             delete_nodes["fundamentals"] = create_msg_delete()
             tool_nodes["fundamentals"] = self.tool_nodes["fundamentals"]
-
+        # New agent
+        if "momentum" in selected_analysts:
+            analyst_nodes["momentum"] = create_momentum_analyst(
+                self.quick_thinking_llm
+            )
+            delete_nodes["momentum"] = create_msg_delete()
+            tool_nodes["momentum"] = self.tool_nodes["momentum"]
         # Create researcher and manager nodes
         bull_researcher_node = create_bull_researcher(
             self.quick_thinking_llm, self.bull_memory
@@ -98,9 +106,9 @@ class GraphSetup:
         trader_node = create_trader(self.quick_thinking_llm, self.trader_memory)
 
         # Create risk analysis nodes
-        aggressive_analyst = create_aggressive_debator(self.quick_thinking_llm)
+        risky_analyst = create_risky_debator(self.quick_thinking_llm)
         neutral_analyst = create_neutral_debator(self.quick_thinking_llm)
-        conservative_analyst = create_conservative_debator(self.quick_thinking_llm)
+        safe_analyst = create_safe_debator(self.quick_thinking_llm)
         risk_manager_node = create_risk_manager(
             self.deep_thinking_llm, self.risk_manager_memory
         )
@@ -121,9 +129,9 @@ class GraphSetup:
         workflow.add_node("Bear Researcher", bear_researcher_node)
         workflow.add_node("Research Manager", research_manager_node)
         workflow.add_node("Trader", trader_node)
-        workflow.add_node("Aggressive Analyst", aggressive_analyst)
+        workflow.add_node("Risky Analyst", risky_analyst)
         workflow.add_node("Neutral Analyst", neutral_analyst)
-        workflow.add_node("Conservative Analyst", conservative_analyst)
+        workflow.add_node("Safe Analyst", safe_analyst)
         workflow.add_node("Risk Judge", risk_manager_node)
 
         # Define edges
@@ -170,17 +178,17 @@ class GraphSetup:
             },
         )
         workflow.add_edge("Research Manager", "Trader")
-        workflow.add_edge("Trader", "Aggressive Analyst")
+        workflow.add_edge("Trader", "Risky Analyst")
         workflow.add_conditional_edges(
-            "Aggressive Analyst",
+            "Risky Analyst",
             self.conditional_logic.should_continue_risk_analysis,
             {
-                "Conservative Analyst": "Conservative Analyst",
+                "Safe Analyst": "Safe Analyst",
                 "Risk Judge": "Risk Judge",
             },
         )
         workflow.add_conditional_edges(
-            "Conservative Analyst",
+            "Safe Analyst",
             self.conditional_logic.should_continue_risk_analysis,
             {
                 "Neutral Analyst": "Neutral Analyst",
@@ -191,7 +199,7 @@ class GraphSetup:
             "Neutral Analyst",
             self.conditional_logic.should_continue_risk_analysis,
             {
-                "Aggressive Analyst": "Aggressive Analyst",
+                "Risky Analyst": "Risky Analyst",
                 "Risk Judge": "Risk Judge",
             },
         )
